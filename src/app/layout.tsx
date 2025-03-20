@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/header";
 import AgentInteract from "@/components/aiAgent";
+import Footer from "@/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
         <Header/>
         {children}
         <AgentInteract/>
+        <Footer/>
       </body>
     </html>
     </ClerkProvider>

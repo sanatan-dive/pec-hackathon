@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+}
+
+model Blog {
+  id          String   @id @default(cuid())
+  query       String
+  title       String
+  link        String   @unique
+  author      String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Courseracourse {
+  id               String   @id @default(cuid())
+  query            String
+  name             String
+  registrationLink String   @unique
+  description      String
+  thumbnail        String
+  workload         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+}
+
+model Udemycourse {
+  id               String   @id @default(cuid())
+  query            String
+  name             String
+  registrationLink String   @unique
+  description      String
+  rating           Float
+  thumbnail        String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+}
+
+model Playlist {
+  id        String   @id @default(cuid())
+  query     String
+  title     String
+  link      String   @unique
+  thumbnail String
+  channel   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+
+
+
