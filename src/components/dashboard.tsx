@@ -13,6 +13,14 @@ interface UserProfile {
   lookingFor: string;
 }
 
+interface Connection {
+  id: string;
+  name: string;
+  title: string;
+  company: string;
+  mutualConnections: number;
+}
+
 interface Appointment {
   id: string;
   mentorName: string;
@@ -33,14 +41,6 @@ interface InvestorMeeting {
   status: 'upcoming' | 'completed' | 'canceled';
 }
 
-interface Connection {
-  id: string;
-  name: string;
-  title: string;
-  company: string;
-  mutualConnections: number;
-}
-
 const UserDashboard: React.FC = () => {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState('profile');
@@ -52,82 +52,83 @@ const UserDashboard: React.FC = () => {
     interests: [],
     lookingFor: ''
   });
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [meetings, setMeetings] = useState<InvestorMeeting[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [skillInput, setSkillInput] = useState('');
   const [interestInput, setInterestInput] = useState('');
 
-  // Simulate fetching data
-  useEffect(() => {
-    // In a real app, you would fetch this data from your backend
-    setTimeout(() => {
-      // Mock data
-      setAppointments([
-        {
-          id: '1',
-          mentorName: 'Jane Smith',
-          mentorTitle: 'CTO at TechGrowth',
-          date: '2025-03-25',
-          time: '10:00 AM',
-          topic: 'Technical Architecture Review',
-          status: 'upcoming'
-        },
-        {
-          id: '2',
-          mentorName: 'Michael Johnson',
-          mentorTitle: 'Product Manager at StartupBoost',
-          date: '2025-03-28',
-          time: '2:00 PM',
-          topic: 'Go-to-Market Strategy',
-          status: 'upcoming'
-        }
-      ]);
-      
-      setMeetings([
-        {
-          id: '1',
-          investorName: 'Sarah Williams',
-          investorFirm: 'Horizon Ventures',
-          date: '2025-04-02',
-          time: '11:00 AM',
-          pitchTopic: 'Seed Round Funding',
-          status: 'upcoming'
-        }
-      ]);
-      
-      setConnections([
-        {
-          id: '1',
-          name: 'Alex Chen',
-          title: 'Founder & CEO',
-          company: 'InnovateTech',
-          mutualConnections: 3
-        },
-        {
-          id: '2',
-          name: 'Maria Garcia',
-          title: 'Software Engineer',
-          company: 'CodeCraft Solutions',
-          mutualConnections: 2
-        },
-        {
-          id: '3',
-          name: 'David Kim',
-          title: 'Marketing Director',
-          company: 'GrowthHackers',
-          mutualConnections: 5
-        }
-      ]);
-      
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  // Hardcoded Mentor Appointments
+  const mentorAppointments: Appointment[] = [
+    {
+      id: '1',
+      mentorName: 'Jane Smith',
+      mentorTitle: 'CTO at TechGrowth',
+      date: '2025-03-25',
+      time: '10:00 AM',
+      topic: 'Technical Architecture Review',
+      status: 'upcoming'
+    },
+    {
+      id: '2',
+      mentorName: 'Michael Johnson',
+      mentorTitle: 'Product Manager at StartupBoost',
+      date: '2025-03-28',
+      time: '2:00 PM',
+      topic: 'Go-to-Market Strategy',
+      status: 'upcoming'
+    }
+  ];
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  // Hardcoded Investor Meetings
+  const investorMeetings: InvestorMeeting[] = [
+    {
+      id: '1',
+      investorName: 'Sarah Williams',
+      investorFirm: 'Horizon Ventures',
+      date: '2025-04-02',
+      time: '11:00 AM',
+      pitchTopic: 'Seed Round Funding',
+      status: 'upcoming'
+    }
+  ];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [profileRes, connectionsRes] = await Promise.all([
+          fetch('/api/profile'),
+          fetch('/api/connections'),
+        ]);
+
+        const profileData = await profileRes.json();
+        const connectionsData = await connectionsRes.json();
+
+        setProfile(profileData);
+        setConnections(connectionsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user) fetchData();
+  }, [user]);
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would save this data to your backend
-    alert('Profile updated successfully!');
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile),
+      });
+      if (response.ok) {
+        alert('Profile updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
   };
 
   const addSkill = () => {
@@ -176,10 +177,10 @@ const UserDashboard: React.FC = () => {
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Welcome, {user.firstName || user.username}</h1>
-        <p className="text-gray-600">Manage your profile, appointments, and connections</p>
+        <p className="text-gray-600">Manage your profile, connections, appointments, and meetings</p>
       </div>
 
-      {/* Simple Tabs */}
+      {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="flex -mb-px">
           <button
@@ -191,6 +192,16 @@ const UserDashboard: React.FC = () => {
             }`}
           >
             Profile
+          </button>
+          <button
+            onClick={() => setActiveTab('connections')}
+            className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'connections'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Connections
           </button>
           <button
             onClick={() => setActiveTab('mentors')}
@@ -212,16 +223,6 @@ const UserDashboard: React.FC = () => {
           >
             Investor Meetings
           </button>
-          <button
-            onClick={() => setActiveTab('connections')}
-            className={`mr-8 py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'connections'
-                ? 'border-indigo-500 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Connections
-          </button>
         </nav>
       </div>
 
@@ -233,11 +234,11 @@ const UserDashboard: React.FC = () => {
               <div className="w-24 h-24 rounded-full bg-gray-200 mb-4 flex items-center justify-center text-gray-500">
                 {user.imageUrl ? (
                   <Image
-                    src="/api/placeholder/96/96" 
-                    alt="Profile" 
-                    className="w-full h-full object-cover rounded-full" 
-                    width={400}
-                    height={600}
+                    src={user.imageUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover rounded-full"
+                    width={96}
+                    height={96}
                   />
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -260,8 +261,7 @@ const UserDashboard: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm text-gray-500">Account Created</label>
-                {/*  eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-                {/* @ts-ignore */}
+                {/* @ts-expect-error missing type */}
                 <p>{new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
@@ -387,128 +387,6 @@ const UserDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Mentor Appointments Tab Content */}
-      {activeTab === 'mentors' && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-2">Your Mentor Appointments</h2>
-          <p className="text-gray-600 mb-6">Manage your scheduled sessions with mentors</p>
-          
-          {appointments.length === 0 ? (
-            <div className="text-center py-8">
-              <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <h3 className="mt-2 text-lg font-medium">No appointments scheduled</h3>
-              <p className="mt-1 text-gray-500">Book a session with a mentor to get guidance for your startup.</p>
-              <button className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Find a Mentor
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {appointments.map((appointment) => (
-                <div key={appointment.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                    <div>
-                      <h3 className="font-semibold">{appointment.mentorName}</h3>
-                      <p className="text-gray-600 text-sm">{appointment.mentorTitle}</p>
-                      <div className="mt-2 flex items-center text-sm text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="16" y1="2" x2="16" y2="6"></line>
-                          <line x1="8" y1="2" x2="8" y2="6"></line>
-                          <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span>{new Date(appointment.date).toLocaleDateString()} at {appointment.time}</span>
-                      </div>
-                      <div className="mt-1">
-                        <span className="text-sm font-medium">Topic:</span>
-                        <span className="text-sm ml-1">{appointment.topic}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="px-3 py-1 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-                        Reschedule
-                      </button>
-                      <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
-                        Join Meeting
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            View All Appointments
-          </button>
-        </div>
-      )}
-
-      {/* Investor Meetings Tab Content */}
-      {activeTab === 'investors' && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-2">Your Investor Meetings</h2>
-          <p className="text-gray-600 mb-6">Track your scheduled pitches and follow-ups with investors</p>
-          
-          {meetings.length === 0 ? (
-            <div className="text-center py-8">
-              <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-              <h3 className="mt-2 text-lg font-medium">No investor meetings scheduled</h3>
-              <p className="mt-1 text-gray-500">Connect with investors interested in your domain.</p>
-              <button className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Find Investors
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {meetings.map((meeting) => (
-                <div key={meeting.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                    <div>
-                      <h3 className="font-semibold">{meeting.investorName}</h3>
-                      <p className="text-gray-600 text-sm">{meeting.investorFirm}</p>
-                      <div className="mt-2 flex items-center text-sm text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="16" y1="2" x2="16" y2="6"></line>
-                          <line x1="8" y1="2" x2="8" y2="6"></line>
-                          <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span>{new Date(meeting.date).toLocaleDateString()} at {meeting.time}</span>
-                      </div>
-                      <div className="mt-1">
-                        <span className="text-sm font-medium">Pitch Topic:</span>
-                        <span className="text-sm ml-1">{meeting.pitchTopic}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="px-3 py-1 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-                        Prepare Pitch
-                      </button>
-                      <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
-                        Join Meeting
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            View All Investor Meetings
-          </button>
-        </div>
-      )}
-
       {/* Connections Tab Content */}
       {activeTab === 'connections' && (
         <div className="bg-white p-6 rounded-lg shadow">
@@ -556,6 +434,98 @@ const UserDashboard: React.FC = () => {
           
           <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             Find More Connections
+          </button>
+        </div>
+      )}
+
+      {/* Mentor Appointments Tab Content */}
+      {activeTab === 'mentors' && (
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-bold mb-2">Your Mentor Appointments</h2>
+          <p className="text-gray-600 mb-6">Manage your scheduled sessions with mentors</p>
+          
+          <div className="space-y-4">
+            {mentorAppointments.map((appointment) => (
+              <div key={appointment.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                  <div>
+                    <h3 className="font-semibold">{appointment.mentorName}</h3>
+                    <p className="text-gray-600 text-sm">{appointment.mentorTitle}</p>
+                    <div className="mt-2 flex items-center text-sm text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <span>{new Date(appointment.date).toLocaleDateString()} at {appointment.time}</span>
+                    </div>
+                    <div className="mt-1">
+                      <span className="text-sm font-medium">Topic:</span>
+                      <span className="text-sm ml-1">{appointment.topic}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="px-3 py-1 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                      Reschedule
+                    </button>
+                    <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
+                      Join Meeting
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            View All Appointments
+          </button>
+        </div>
+      )}
+
+      {/* Investor Meetings Tab Content */}
+      {activeTab === 'investors' && (
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-bold mb-2">Your Investor Meetings</h2>
+          <p className="text-gray-600 mb-6">Track your scheduled pitches and follow-ups with investors</p>
+          
+          <div className="space-y-4">
+            {investorMeetings.map((meeting) => (
+              <div key={meeting.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                  <div>
+                    <h3 className="font-semibold">{meeting.investorName}</h3>
+                    <p className="text-gray-600 text-sm">{meeting.investorFirm}</p>
+                    <div className="mt-2 flex items-center text-sm text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <span>{new Date(meeting.date).toLocaleDateString()} at {meeting.time}</span>
+                    </div>
+                    <div className="mt-1">
+                      <span className="text-sm font-medium">Pitch Topic:</span>
+                      <span className="text-sm ml-1">{meeting.pitchTopic}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="px-3 py-1 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                      Prepare Pitch
+                    </button>
+                    <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
+                      Join Meeting
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            View All Investor Meetings
           </button>
         </div>
       )}

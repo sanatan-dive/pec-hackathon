@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  //@ts-ignore
+  //@ts-expect-error missing type
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = [

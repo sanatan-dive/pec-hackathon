@@ -7,15 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  firstName String?
-  lastName  String?
-  imageUrl  String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+model UserProfile {
+  id           String    @id @default(cuid())
+  userId       String    @unique // No relation to User table
+  startupIdea  String    @default("")
+  skills       String[]  @default([])
+  experience   String    @default("")
+  interests    String[]  @default([])
+  lookingFor   String    @default("")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
 
+model Connection {
+  id                String    @id @default(cuid())
+  userId            String    // No relation to User table
+  name              String
+  title             String
+  company           String
+  mutualConnections Int
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 model Blog {
@@ -39,7 +51,6 @@ model Courseracourse {
   workload         String
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-
 }
 
 model Udemycourse {
@@ -52,7 +63,6 @@ model Udemycourse {
   thumbnail        String
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-
 }
 
 model Playlist {
@@ -64,9 +74,4 @@ model Playlist {
   channel   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }
-
-
-
-
