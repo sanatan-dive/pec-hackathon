@@ -62,12 +62,10 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
     }
   };
 
-  const onRoadmap = ()=>{
-
+  const onRoadmap = () => {
     if (searchQuery.trim()) {
       router.push(`/roadmap?query=${encodeURIComponent(searchQuery)}`);
     }
-
   }
 
   const containerVariants = {
@@ -95,9 +93,9 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
   };
 
   return (
-    <div className=" p-10 h-screen flex flex-col justify-center items-center w-full text-white relative">
+    <div className="p-10 h-screen flex flex-col justify-center items-center w-full text-white relative bg-gradient-to-br from-[#0a1647] via-[#061172] to-[#0a1647]">
       {/* Generate Roadmap Button */}
-      <AnimatePresence >
+      <AnimatePresence>
         {!localIsLoading && (
           <motion.div
             key="search"
@@ -136,12 +134,11 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
             className="w-full max-w-8xl"
           >
               <RainbowButton
-        onClick={onRoadmap}
-        className="absolute top-4 right-4 px-6 py-2 bg-gradient-to-r from-[#467cbf] via-[#0016d6] to-[#467cbf]  text-white rounded-full shadow-lg hover:opacity-80 transition hover:scale-105 "
-      >
-        Generate a Roadmap
-      
-      </RainbowButton>
+                onClick={onRoadmap}
+                className="absolute top-4 right-4 px-6 py-2 bg-gradient-to-r from-[#00b7c7] via-[#0aeeff] to-[#00b7c7] text-[#ffffff] font-semibold rounded-full shadow-lg hover:opacity-90 transition hover:scale-105"
+              >
+                Generate a Roadmap
+              </RainbowButton>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
               {responses && (
                 <>
@@ -150,10 +147,10 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
                     variants={itemVariants}
                     className="flex flex-col gap-8"
                   >
-                    <div>
+                    <div className="bg-[#091a5c]/50 rounded-xl p-6 backdrop-blur-sm border border-[#00b7c7]/20">
                       <CourseraCourses courses={responses?.results?.coursera?.courses || []} />
                     </div>
-                    <div>
+                    <div className="bg-[#091a5c]/50 rounded-xl p-6 backdrop-blur-sm border border-[#00b7c7]/20">
                       <UdemyCourses courses={responses?.results?.udemy?.courses || []} />
                     </div>
                   </motion.div>
