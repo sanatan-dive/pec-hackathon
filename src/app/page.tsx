@@ -231,7 +231,11 @@ export default function Home() {
               {features.map((feature, index) => (
                 <motion.div 
                   key={index}
+<<<<<<< Updated upstream
                   className={`p-6 rounded-xl cursor-pointer transition-all duration-300 ${currentFeature === index ? 'bg-gradient-to-r from-[#023e8a]/50 to-[#0077b6]/50 border border-[#0096c7]/30' : 'hover:bg-[#0077b6]/20'}`}
+=======
+                  className={`p-6 rounded-xl cursor-pointer transition-all duration-300 ${currentFeature === index ? 'bg-gradient-to-r from-blue-800/50 to-purple-800/50 border border-blue-500/30' : 'hover:bg-blue-900/20'}`}
+>>>>>>> Stashed changes
                   whileHover={{ scale: 1.02 }}
                   onClick={() => setCurrentFeature(index)}
                 >
@@ -624,6 +628,7 @@ export default function Home() {
                 transition={{ delay: index * 0.2, duration: 0.6 }}
                 whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0, 150, 199, 0.2)" }}
               >
+<<<<<<< Updated upstream
                 <div className="flex flex-col h-full">
                   <div className="mb-4 text-[#00b4d8]">
                     {[...Array(5)].map((_, i) => (
@@ -637,6 +642,13 @@ export default function Home() {
                       <h4 className="font-bold">{testimonial.name}</h4>
                       <p className="text-sm text-[#90e0ef]">{testimonial.company}</p>
                     </div>
+=======
+                <div className="mb-4 flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-full bg-gradient-to-r ${testimonial.color}`}></div>
+                  <div>
+                    <h4 className="font-bold text-lg">{testimonial.name}</h4>
+                    <p className="text-blue-300">{testimonial.title}</p>
+>>>>>>> Stashed changes
                   </div>
                 </div>
               </motion.div>
@@ -805,10 +817,62 @@ export default function Home() {
           </div>
         </motion.section>
 
+<<<<<<< Updated upstream
       </main>
       
       {/* Footer */}
       
+=======
+      <footer className="bg-gray-900/50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">EntreConnect</h3>
+              <p className="text-blue-200 mb-4">AI-powered mentorship and growth platform for startups at every stage.</p>
+              <div className="flex space-x-4">
+                {['twitter', 'facebook', 'instagram', 'linkedin'].map((social) => (
+                  <a key={social} href="#" className="text-blue-400 hover:text-cyan-400 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center">
+                      <i className={`fab fa-${social}`}></i>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+            
+            {[
+              {
+                title: "Platform",
+                links: ["Features", "Pricing", "Testimonials", "For Investors", "For Mentors"]
+              },
+              {
+                title: "Resources",
+                links: ["Blog", "Knowledge Hub", "Success Stories", "Events", "Webinars"]
+              },
+              {
+                title: "Company",
+                links: ["About Us", "Careers", "Contact", "Privacy Policy", "Terms of Service"]
+              }
+            ].map((column, i) => (
+              <div key={i}>
+                <h3 className="text-xl font-bold mb-4">{column.title}</h3>
+                <ul className="space-y-2">
+                  {column.links.map((link, j) => (
+                    <li key={j}>
+                      <a href="#" className="text-blue-200 hover:text-cyan-400 transition-colors">{link}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-12 pt-8 border-t border-blue-900/30 text-center text-blue-300">
+            <p>© {new Date().getFullYear()} EntreConnect. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+>>>>>>> Stashed changes
     </div>
   );
 }
