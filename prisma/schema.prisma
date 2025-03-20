@@ -9,7 +9,7 @@ datasource db {
 
 model UserProfile {
   id           String    @id @default(cuid())
-  userId       String    @unique // No relation to User table
+  userId       String    @unique
   startupIdea  String    @default("")
   skills       String[]  @default([])
   experience   String    @default("")
@@ -21,24 +21,13 @@ model UserProfile {
 
 model Connection {
   id                String    @id @default(cuid())
-  userId            String    // No relation to User table
+  userId            String
   name              String
   title             String
   company           String
   mutualConnections Int
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-}
-
-model Blog {
-  id          String   @id @default(cuid())
-  query       String
-  title       String
-  link        String   @unique
-  author      String?
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model Courseracourse {

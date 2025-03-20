@@ -19,6 +19,7 @@ interface Connection {
   title: string;
   company: string;
   mutualConnections: number;
+  similarityScore?: number; // Added for recommended connections
 }
 
 interface Appointment {
@@ -53,6 +54,7 @@ const UserDashboard: React.FC = () => {
     lookingFor: ''
   });
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [recommendedConnections, setRecommendedConnections] = useState<Connection[]>([]); // New state for recommendations
   const [skillInput, setSkillInput] = useState('');
   const [interestInput, setInterestInput] = useState('');
 
@@ -100,11 +102,16 @@ const UserDashboard: React.FC = () => {
           fetch('/api/connections'),
         ]);
 
+        if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status}`);
+        if (!connectionsRes.ok) throw new Error(`Connections fetch failed: ${connectionsRes.status}`);
+
         const profileData = await profileRes.json();
         const connectionsData = await connectionsRes.json();
+        console.log(connectionsData)
 
         setProfile(profileData);
-        setConnections(connectionsData);
+        setConnections(connectionsData.connections || []); // Extract 'connections' array
+        setRecommendedConnections(connectionsData.recommendedConnections || []); // Extract 'recommendedConnections' array
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -261,7 +268,6 @@ const UserDashboard: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm text-gray-500">Account Created</label>
-                {/* @ts-expect-error missing type */}
                 <p>{new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
@@ -389,54 +395,93 @@ const UserDashboard: React.FC = () => {
 
       {/* Connections Tab Content */}
       {activeTab === 'connections' && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-2">Recommended Connections</h2>
-          <p className="text-gray-600 mb-6">People you might want to connect with based on your profile</p>
-          
-          {connections.length === 0 ? (
-            <div className="text-center py-8">
-              <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <h3 className="mt-2 text-lg font-medium">No recommendations yet</h3>
-              <p className="mt-1 text-gray-500">Complete your profile to get personalized connection recommendations.</p>
+  <div className="bg-white p-6 rounded-lg shadow">
+    <h2 className="text-xl font-bold mb-2">Your Connections</h2>
+    <p className="text-gray-600 mb-6">People you are already connected with</p>
+    
+    {connections.length === 0 ? (
+      <div className="text-center py-8">
+        <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <h3 className="mt-2 text-lg font-medium">No connections yet</h3>
+        <p className="mt-1 text-gray-500">Start building your network below.</p>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {connections.map((connection) => (
+          <div key={connection.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center space-x-4 mb-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium">{connection.name}</h3>
+                <p className="text-gray-600 text-sm">{connection.title}</p>
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {connections.map((connection) => (
-                <div key={connection.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-center space-x-4 mb-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{connection.name}</h3>
-                      <p className="text-gray-600 text-sm">{connection.title}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm mb-3">{connection.company}</p>
-                  <div className="text-xs text-gray-500 mb-3">
-                    {connection.mutualConnections} mutual connections
-                  </div>
-                  <button className="w-full py-1 px-3 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
-                    Connect
-                  </button>
-                </div>
-              ))}
+            <p className="text-sm mb-3">{connection.company}</p>
+            <div className="text-xs text-gray-500 mb-3">
+              {connection.mutualConnections} mutual connections
             </div>
-          )}
-          
-          <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Find More Connections
-          </button>
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
+    )}
+
+    <h2 className="text-xl font-bold mt-8 mb-2">Recommended Connections</h2>
+    <p className="text-gray-600 mb-6">People you might want to connect with based on your skills or experience</p>
+    
+    {recommendedConnections.length === 0 ? (
+      <div className="text-center py-8">
+        <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <h3 className="mt-2 text-lg font-medium">No recommendations yet</h3>
+        <p className="mt-1 text-gray-500">Complete your profile to get personalized recommendations.</p>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {recommendedConnections.map((connection) => (
+          <div key={connection.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center space-x-4 mb-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium">{connection.name}</h3>
+                <p className="text-gray-600 text-sm">{connection.title}</p>
+              </div>
+            </div>
+            <p className="text-sm mb-3">{connection.company}</p>
+            <div className="text-xs text-gray-500 mb-3">
+              {connection.mutualConnections} mutual connections
+            </div>
+            <button className="w-full py-1 px-3 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
+              Connect
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+    
+    <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      Find More Connections
+    </button>
+  </div>
+)}
 
       {/* Mentor Appointments Tab Content */}
       {activeTab === 'mentors' && (
