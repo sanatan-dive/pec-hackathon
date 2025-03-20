@@ -228,7 +228,7 @@ export default function Home() {
               {features.map((feature, index) => (
                 <motion.div 
                   key={index}
-                  className={`p-6 rounded-xl cursor-pointer transition-all duration-300 ${currentFeature === index ? 'bg-gradient-to-r from-blue-800/50 to-purple-800/50 border border-blue-500/30' : 'hover:bg-blue-900/20'}`}
+                  className={p-6 rounded-xl cursor-pointer transition-all duration-300 ${currentFeature === index ? 'bg-gradient-to-r from-blue-800/50 to-purple-800/50 border border-blue-500/30' : 'hover:bg-blue-900/20'}}
                   whileHover={{ scale: 1.02 }}
                   onClick={() => setCurrentFeature(index)}
                 >
@@ -629,7 +629,7 @@ export default function Home() {
                 whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.1)" }}
               >
                 <div className="mb-4 flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-full bg-gradient-to-r ${testimonial.color}`}></div>
+                  <div className={w-14 h-14 rounded-full bg-gradient-to-r ${testimonial.color}}></div>
                   <div>
                     <h4 className="font-bold text-lg">{testimonial.name}</h4>
                     <p className="text-blue-300">{testimonial.title}</p>
@@ -772,7 +772,7 @@ export default function Home() {
                 {['twitter', 'facebook', 'instagram', 'linkedin'].map((social) => (
                   <a key={social} href="#" className="text-blue-400 hover:text-cyan-400 transition-colors">
                     <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center">
-                      <i className={`fab fa-${social}`}></i>
+                      <i className={fab fa-${social}}></i>
                     </div>
                   </a>
                 ))}
