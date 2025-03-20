@@ -23,7 +23,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between h-16 items-center">
           <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold text-white hover:text-indigo-200 transition-colors">
-              YourLogo
+              EntreConnect
             </Link>
           </div>
           

@@ -49,7 +49,7 @@ export default function Home() {
   
       <Head>
         <title>EntreConnect | AI-Powered Startup Growth Platform</title>
-        <meta name="description" content="Supercharge your startup journey with AI-powered mentorship, expert connections, and growth guidance." />
+        <meta name="description" content="Start Your Entrepreneurship Journey Today with AI-powered mentorship, expert connections, and growth guidance." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -68,13 +68,13 @@ export default function Home() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              Supercharge Your <motion.span
+              Start Your <motion.span
                 className="text-transparent bg-clip-text bg-gradient-to-r from-[#00b4d8] to-[#90e0ef]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5, duration: 0.8 }}
               >
-                Startup Journey
+                Entrepreneurship Journey Today
               </motion.span>
             </motion.h1>
             <motion.p 
