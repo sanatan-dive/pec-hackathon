@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaRocket, FaBrain, FaChartLine, FaUsers, FaRegLightbulb, FaArrowRight } from 'react-icons/fa';
-import Header from '@/components/header';
+
 
 export default function Home() {
   const [currentFeature, setCurrentFeature] = useState(0);
@@ -46,9 +46,7 @@ export default function Home() {
   return (
 
     <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-purple-900 min-h-screen text-white">
-      <div>
-        <Header /> 
-      </div>
+  
       <Head>
         <title>EntreConnect | AI-Powered Startup Growth Platform</title>
         <meta name="description" content="Supercharge your startup journey with AI-powered mentorship, expert connections, and growth guidance." />
