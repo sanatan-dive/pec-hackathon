@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
@@ -19,7 +18,29 @@ interface Connection {
   title: string;
   company: string;
   mutualConnections: number;
-  similarityScore?: number; // Added for recommended connections
+}
+
+interface BackendConnection {
+  id: string;
+  userId: string;
+  connectionId: string;
+  createdAt: string;
+  updatedAt: string;
+  // Add any other fields that your actual Connection model has
+}
+
+interface RecommendedConnection {
+  id: string;
+  userId: string;
+  name?: string;
+  title?: string;
+  company?: string;
+  // Add any other fields from your UserProfile model
+}
+
+interface ConnectionsResponse {
+  connections: BackendConnection[];
+  recommendedConnections: RecommendedConnection[];
 }
 
 interface Appointment {
@@ -54,7 +75,7 @@ const UserDashboard: React.FC = () => {
     lookingFor: ''
   });
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [recommendedConnections, setRecommendedConnections] = useState<Connection[]>([]); // New state for recommendations
+  const [recommendedConnections, setRecommendedConnections] = useState<RecommendedConnection[]>([]);
   const [skillInput, setSkillInput] = useState('');
   const [interestInput, setInterestInput] = useState('');
 
@@ -101,24 +122,47 @@ const UserDashboard: React.FC = () => {
           fetch('/api/profile'),
           fetch('/api/connections'),
         ]);
-
+        
         if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status}`);
         if (!connectionsRes.ok) throw new Error(`Connections fetch failed: ${connectionsRes.status}`);
-
+        
         const profileData = await profileRes.json();
-        const connectionsData = await connectionsRes.json();
-        console.log(connectionsData)
-
+        const connectionsData: ConnectionsResponse = await connectionsRes.json();
+        
+        console.log('Connections Data:', connectionsData); // Debugging
+        
         setProfile(profileData);
-        setConnections(connectionsData.connections || []); // Extract 'connections' array
-        setRecommendedConnections(connectionsData.recommendedConnections || []); // Extract 'recommendedConnections' array
+        
+        // Transform backend connections to frontend format 
+        // This is a temporary transformation - ideally you'd have real data here
+        const formattedConnections = connectionsData.connections.map((conn, index) => ({
+          id: conn.id,
+          name: `Connection ${index + 1}`, // This would come from a join in a real application
+          title: 'Member',
+          company: 'Startup Network',
+          mutualConnections: Math.floor(Math.random() * 10)
+        }));
+        
+        // Transform recommended connections to frontend format
+        const formattedRecommendations = connectionsData.recommendedConnections.map((rec, index) => ({
+          id: rec.id,
+          userId: rec.userId,
+          name: rec.name || `Recommended User ${index + 1}`,
+          title: rec.title || 'Entrepreneur',
+          company: rec.company || 'Tech Startup'
+        }));
+        
+        setConnections(formattedConnections);
+        setRecommendedConnections(formattedRecommendations);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setConnections([]);
+        setRecommendedConnections([]);
       } finally {
         setIsLoading(false);
       }
     };
-
+    
     if (user) fetchData();
   }, [user]);
 
@@ -172,6 +216,49 @@ const UserDashboard: React.FC = () => {
     });
   };
 
+  const handleConnect = async (userId: string) => {
+    try {
+      const response = await fetch('/api/connections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ connectionId: userId }),
+      });
+      
+      if (response.ok) {
+        alert('Connection request sent!');
+        // Refresh connections
+        const connectionsRes = await fetch('/api/connections');
+        if (connectionsRes.ok) {
+          const data: ConnectionsResponse = await connectionsRes.json();
+          
+          // Transform connections as before
+          const formattedConnections = data.connections.map((conn, index) => ({
+            id: conn.id,
+            name: `Connection ${index + 1}`,
+            title: 'Member',
+            company: 'Startup Network',
+            mutualConnections: Math.floor(Math.random() * 10)
+          }));
+          
+          setConnections(formattedConnections);
+          
+          // Update recommended connections
+          const formattedRecommendations = data.recommendedConnections.map((rec, index) => ({
+            id: rec.id,
+            userId: rec.userId,
+            name: rec.name || `Recommended User ${index + 1}`,
+            title: rec.title || 'Entrepreneur',
+            company: rec.company || 'Tech Startup'
+          }));
+          
+          setRecommendedConnections(formattedRecommendations);
+        }
+      }
+    } catch (error) {
+      console.error('Error connecting:', error);
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-64">Loading your dashboard...</div>;
   }
@@ -186,7 +273,7 @@ const UserDashboard: React.FC = () => {
         <h1 className="text-3xl font-bold mb-2">Welcome, {user.firstName || user.username}</h1>
         <p className="text-gray-600">Manage your profile, connections, appointments, and meetings</p>
       </div>
-
+      
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="flex -mb-px">
@@ -232,7 +319,7 @@ const UserDashboard: React.FC = () => {
           </button>
         </nav>
       </div>
-
+      
       {/* Profile Tab Content */}
       {activeTab === 'profile' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -248,7 +335,17 @@ const UserDashboard: React.FC = () => {
                     height={96}
                   />
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
@@ -272,14 +369,14 @@ const UserDashboard: React.FC = () => {
               </div>
             </div>
           </div>
-
           <div className="md:col-span-2 bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-bold mb-4">Complete Your Profile</h2>
             <p className="text-gray-600 mb-6">Tell us more about you and your startup</p>
-            
             <form onSubmit={handleProfileSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="startupIdea" className="block text-sm font-medium text-gray-700">Startup Idea</label>
+                <label htmlFor="startupIdea" className="block text-sm font-medium text-gray-700">
+                  Startup Idea
+                </label>
                 <textarea
                   id="startupIdea"
                   placeholder="Describe your startup idea or current project"
@@ -289,9 +386,10 @@ const UserDashboard: React.FC = () => {
                   rows={4}
                 />
               </div>
-
               <div className="space-y-2">
-                <label htmlFor="skills" className="block text-sm font-medium text-gray-700">Skills</label>
+                <label htmlFor="skills" className="block text-sm font-medium text-gray-700">
+                  Skills
+                </label>
                 <div className="flex gap-2">
                   <input
                     id="skills"
@@ -300,8 +398,8 @@ const UserDashboard: React.FC = () => {
                     onChange={(e) => setSkillInput(e.target.value)}
                     className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={addSkill}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
@@ -310,10 +408,13 @@ const UserDashboard: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {profile.skills.map((skill, index) => (
-                    <div key={index} className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full flex items-center gap-1">
+                    <div
+                      key={index}
+                      className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full flex items-center gap-1"
+                    >
                       {skill}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => removeSkill(skill)}
                         className="text-indigo-800 hover:text-indigo-900 ml-1"
                       >
@@ -323,9 +424,10 @@ const UserDashboard: React.FC = () => {
                   ))}
                 </div>
               </div>
-
               <div className="space-y-2">
-                <label htmlFor="experience" className="block text-sm font-medium text-gray-700">Experience</label>
+                <label htmlFor="experience" className="block text-sm font-medium text-gray-700">
+                  Experience
+                </label>
                 <textarea
                   id="experience"
                   placeholder="Share your professional experience or background"
@@ -335,9 +437,10 @@ const UserDashboard: React.FC = () => {
                   rows={4}
                 />
               </div>
-
               <div className="space-y-2">
-                <label htmlFor="interests" className="block text-sm font-medium text-gray-700">Interests</label>
+                <label htmlFor="interests" className="block text-sm font-medium text-gray-700">
+                  Interests
+                </label>
                 <div className="flex gap-2">
                   <input
                     id="interests"
@@ -346,8 +449,8 @@ const UserDashboard: React.FC = () => {
                     onChange={(e) => setInterestInput(e.target.value)}
                     className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={addInterest}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
@@ -356,10 +459,13 @@ const UserDashboard: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {profile.interests.map((interest, index) => (
-                    <div key={index} className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full flex items-center gap-1">
+                    <div
+                      key={index}
+                      className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full flex items-center gap-1"
+                    >
                       {interest}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => removeInterest(interest)}
                         className="text-indigo-800 hover:text-indigo-900 ml-1"
                       >
@@ -369,9 +475,10 @@ const UserDashboard: React.FC = () => {
                   ))}
                 </div>
               </div>
-
               <div className="space-y-2">
-                <label htmlFor="lookingFor" className="block text-sm font-medium text-gray-700">What are you looking for?</label>
+                <label htmlFor="lookingFor" className="block text-sm font-medium text-gray-700">
+                  What are you looking for?
+                </label>
                 <textarea
                   id="lookingFor"
                   placeholder="Describe what kind of help, connections, or resources you're seeking"
@@ -381,9 +488,8 @@ const UserDashboard: React.FC = () => {
                   rows={4}
                 />
               </div>
-
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Save Profile
@@ -392,118 +498,183 @@ const UserDashboard: React.FC = () => {
           </div>
         </div>
       )}
-
+      
       {/* Connections Tab Content */}
       {activeTab === 'connections' && (
-  <div className="bg-white p-6 rounded-lg shadow">
-    <h2 className="text-xl font-bold mb-2">Your Connections</h2>
-    <p className="text-gray-600 mb-6">People you are already connected with</p>
-    
-    {connections.length === 0 ? (
-      <div className="text-center py-8">
-        <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <h3 className="mt-2 text-lg font-medium">No connections yet</h3>
-        <p className="mt-1 text-gray-500">Start building your network below.</p>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {connections.map((connection) => (
-          <div key={connection.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center space-x-4 mb-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-medium">{connection.name}</h3>
-                <p className="text-gray-600 text-sm">{connection.title}</p>
-              </div>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-bold mb-2">Your Connections</h2>
+          <p className="text-gray-600 mb-6">People you are already connected with</p>
+          {connections.length === 0 ? (
+            <div className="text-center py-8">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="mx-auto h-12 w-12 text-gray-400"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <h3 className="mt-2 text-lg font-medium">No connections yet</h3>
+              <p className="mt-1 text-gray-500">Start building your network.</p>
             </div>
-            <p className="text-sm mb-3">{connection.company}</p>
-            <div className="text-xs text-gray-500 mb-3">
-              {connection.mutualConnections} mutual connections
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {connections.map((connection) => (
+                <div
+                  key={connection.id}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center space-x-4 mb-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-gray-400"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{connection.name}</h3>
+                      <p className="text-gray-600 text-sm">{connection.title}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm mb-3">{connection.company}</p>
+                  <div className="text-xs text-gray-500 mb-3">
+                    {connection.mutualConnections} mutual connections
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        ))}
-      </div>
-    )}
-
-    <h2 className="text-xl font-bold mt-8 mb-2">Recommended Connections</h2>
-    <p className="text-gray-600 mb-6">People you might want to connect with based on your skills or experience</p>
-    
-    {recommendedConnections.length === 0 ? (
-      <div className="text-center py-8">
-        <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <h3 className="mt-2 text-lg font-medium">No recommendations yet</h3>
-        <p className="mt-1 text-gray-500">Complete your profile to get personalized recommendations.</p>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {recommendedConnections.map((connection) => (
-          <div key={connection.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center space-x-4 mb-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-medium">{connection.name}</h3>
-                <p className="text-gray-600 text-sm">{connection.title}</p>
-              </div>
+          )}
+          
+          {/* Recommended Connections section using actual data */}
+          <h2 className="text-xl font-bold mt-8 mb-2">Recommended Connections</h2>
+          <p className="text-gray-600 mb-6">People you might want to connect with</p>
+          
+          {recommendedConnections.length === 0 ? (
+            <div className="text-center py-8">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="mx-auto h-12 w-12 text-gray-400"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <h3 className="mt-2 text-lg font-medium">No recommendations available</h3>
+              <p className="mt-1 text-gray-500">Recommendations will appear here when available.</p>
             </div>
-            <p className="text-sm mb-3">{connection.company}</p>
-            <div className="text-xs text-gray-500 mb-3">
-              {connection.mutualConnections} mutual connections
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recommendedConnections.map((connection) => (
+                <div
+                  key={connection.id}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center space-x-4 mb-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-gray-400"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{connection.name}</h3>
+                      <p className="text-gray-600 text-sm">{connection.title}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm mb-3">{connection.company}</p>
+                  <button
+                    onClick={() => handleConnect(connection.userId)}
+                    className="w-full mt-2 py-1 px-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none"
+                  >
+                    Connect
+                  </button>
+                </div>
+              ))}
             </div>
-            <button className="w-full py-1 px-3 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
-              Connect
-            </button>
-          </div>
-        ))}
-      </div>
-    )}
-    
-    <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-      Find More Connections
-    </button>
-  </div>
-)}
-
+          )}
+          
+          <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Find More Connections
+          </button>
+        </div>
+      )}
+      
       {/* Mentor Appointments Tab Content */}
       {activeTab === 'mentors' && (
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-bold mb-2">Your Mentor Appointments</h2>
           <p className="text-gray-600 mb-6">Manage your scheduled sessions with mentors</p>
-          
           <div className="space-y-4">
             {mentorAppointments.map((appointment) => (
-              <div key={appointment.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div
+                key={appointment.id}
+                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <div>
                     <h3 className="font-semibold">{appointment.mentorName}</h3>
                     <p className="text-gray-600 text-sm">{appointment.mentorTitle}</p>
                     <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="mr-1 h-4 w-4"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                       </svg>
-                      <span>{new Date(appointment.date).toLocaleDateString()} at {appointment.time}</span>
+                      <span>
+                        {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
+                      </span>
                     </div>
                     <div className="mt-1">
                       <span className="text-sm font-medium">Topic:</span>
@@ -522,34 +693,48 @@ const UserDashboard: React.FC = () => {
               </div>
             ))}
           </div>
-          
           <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             View All Appointments
           </button>
         </div>
       )}
-
+      
       {/* Investor Meetings Tab Content */}
       {activeTab === 'investors' && (
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-bold mb-2">Your Investor Meetings</h2>
           <p className="text-gray-600 mb-6">Track your scheduled pitches and follow-ups with investors</p>
-          
           <div className="space-y-4">
             {investorMeetings.map((meeting) => (
-              <div key={meeting.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div
+                key={meeting.id}
+                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <div>
                     <h3 className="font-semibold">{meeting.investorName}</h3>
                     <p className="text-gray-600 text-sm">{meeting.investorFirm}</p>
                     <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-4 w-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="mr-1 h-4 w-4"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                       </svg>
-                      <span>{new Date(meeting.date).toLocaleDateString()} at {meeting.time}</span>
+                      <span>
+                        {new Date(meeting.date).toLocaleDateString()} at {meeting.time}
+                      </span>
                     </div>
                     <div className="mt-1">
                       <span className="text-sm font-medium">Pitch Topic:</span>
@@ -558,7 +743,7 @@ const UserDashboard: React.FC = () => {
                   </div>
                   <div className="flex gap-2">
                     <button className="px-3 py-1 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-                      Prepare Pitch
+                      Reschedule
                     </button>
                     <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
                       Join Meeting
@@ -569,11 +754,160 @@ const UserDashboard: React.FC = () => {
             ))}
           </div>
           
-          <button className="mt-6 w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            View All Investor Meetings
-          </button>
+          {/* Form to Schedule New Investor Meeting */}
+          <div className="mt-8 border-t pt-6">
+            <h3 className="text-lg font-medium mb-4">Schedule New Investor Meeting</h3>
+            <form className="space-y-4">
+              <div>
+                <label htmlFor="investorName" className="block text-sm font-medium text-gray-700">
+                  Investor Name
+                </label>
+                <input
+                  type="text"
+                  id="investorName"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter investor name"
+                />
+              </div>
+              <div>
+                <label htmlFor="investorFirm" className="block text-sm font-medium text-gray-700">
+                  Investor Firm
+                </label>
+                <input
+                  type="text"
+                  id="investorFirm"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter investor firm"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="meetingDate" className="block text-sm font-medium text-gray-700">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    id="meetingDate"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="meetingTime" className="block text-sm font-medium text-gray-700">
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    id="meetingTime"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="pitchTopic" className="block text-sm font-medium text-gray-700">
+                  Pitch Topic
+                </label>
+                <input
+                  type="text"
+                  id="pitchTopic"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter pitch topic"
+                />
+              </div>
+              <div>
+                <label htmlFor="meetingNotes" className="block text-sm font-medium text-gray-700">
+                  Meeting Notes or Agenda
+                </label>
+                <textarea
+                  id="meetingNotes"
+                  rows={3}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter any notes or agenda items"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Schedule Meeting
+              </button>
+            </form>
+          </div>
+          
+          <div className="mt-8 border-t pt-6">
+            <h3 className="text-lg font-medium mb-4">Pitch Deck Management</h3>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h4 className="font-medium">Current Pitch Deck</h4>
+                  <p className="text-sm text-gray-600">Last updated: March 15, 2025</p>
+                </div>
+                <button className="px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                  View
+                </button>
+              </div>
+              <div className="space-y-2">
+                <button className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none">
+                  Upload New Version
+                </button>
+                <button className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none">
+                  Get Feedback on Pitch Deck
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
+      
+      {/* Dashboard Metrics (visible on all tabs) */}
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Network Size</h3>
+          <p className="mt-2 text-3xl font-semibold">{connections.length}</p>
+          <div className="mt-1 text-xs text-green-500 flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+              <polyline points="16 7 22 7 22 13"></polyline>
+            </svg>
+            <span>+3 this week</span>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Upcoming Appointments</h3>
+          <p className="mt-2 text-3xl font-semibold">{mentorAppointments.length}</p>
+          <div className="mt-1 text-xs text-gray-500">Next: {mentorAppointments.length > 0 ? mentorAppointments[0].date : 'None'}</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Investor Meetings</h3>
+          <p className="mt-2 text-3xl font-semibold">{investorMeetings.length}</p>
+          <div className="mt-1 text-xs text-gray-500">Next: {investorMeetings.length > 0 ? investorMeetings[0].date : 'None'}</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">Profile Completion</h3>
+          <p className="mt-2 text-3xl font-semibold">
+            {Math.round(
+              ((profile.startupIdea ? 1 : 0) +
+                (profile.skills.length > 0 ? 1 : 0) +
+                (profile.experience ? 1 : 0) +
+                (profile.interests.length > 0 ? 1 : 0) +
+                (profile.lookingFor ? 1 : 0)) /
+                5 *
+                100
+            )}%
+          </p>
+          <div className="mt-1 text-xs text-blue-500">Complete your profile to get better matches</div>
+        </div>
+      </div>
     </div>
   );
 };
