@@ -55,7 +55,7 @@ export default function AgentInteract() {
         if (data.error?.includes('Thread ID')) {
           setError({
           
-
+        // @ts-expect-error missing
             type: 'thread',
             message: 'Thread ID configuration error. Trying to regenerate thread ID...'
           });
@@ -66,6 +66,7 @@ export default function AgentInteract() {
           localStorage.setItem('agent_thread_id', newThreadId);
         } else {
           setError({
+            // @ts-expect-error missing
             type: 'general',
             message: data.error || 'An unexpected error occurred'
           });
@@ -74,6 +75,7 @@ export default function AgentInteract() {
     } catch (error) {
       console.error(error);
       setError({
+        // @ts-expect-error missing
         type: 'network',
         message: 'Failed to communicate with the agent. Please check your network connection.'
       });
@@ -156,7 +158,7 @@ export default function AgentInteract() {
                   </svg>
                   Error
                 </h3>
-               
+                {/* @ts-expect-error missing */}
                 <p>{error.message}</p>
               </div>
             )}

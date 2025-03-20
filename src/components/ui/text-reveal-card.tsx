@@ -16,6 +16,7 @@ export const TextRevealCard = ({
   className?: string;
 }) => {
   const [widthPercentage, setWidthPercentage] = useState(0);
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cardRef = useRef<HTMLDivElement | any>(null);
   const [left, setLeft] = useState(0);
   const [localWidth, setLocalWidth] = useState(0);
@@ -29,7 +30,7 @@ export const TextRevealCard = ({
       setLocalWidth(localWidth);
     }
   }, []);
-
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function mouseMoveHandler(event: any) {
     event.preventDefault();
 

@@ -4,9 +4,10 @@ import Image from "next/image";
 import { useState } from "react";
 import { ArrowRight, } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth, SignInButton, useUser } from "@clerk/nextjs";
+import LoginDialog from "./LoginDialog";
 
-import axios from "axios";
+
+
 
 interface CourseraCoursesProps {
   courses: {
@@ -25,10 +26,7 @@ export default function CourseraCourses({ courses }: CourseraCoursesProps) {
     [key: number]: boolean;
   }>({});
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const { isSignedIn,user } = useUser();
-  const [bookmarkedCourses, setBookmarkedCourses] = useState<{
-    [key: number]: boolean;
-  }>({});
+  
 
   if (!courses || courses.length === 0) {
     return (

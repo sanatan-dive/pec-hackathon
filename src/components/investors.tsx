@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
-import { FaHandshake, FaUsers, FaRegNewspaper, FaVideo, FaComment, FaCalendarAlt, FaInfoCircle, FaCalendar, FaTimes } from 'react-icons/fa';
+
+import {  FaVideo, FaComment,  FaInfoCircle, FaCalendar, FaTimes } from 'react-icons/fa';
 
 interface Investor {
   name: string;

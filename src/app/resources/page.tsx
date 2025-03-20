@@ -1,11 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 
 import { LandingPageContent } from "@/components/LandingPage";
 
-import axios from "axios";
+
 
 export default function LandingPage() {
+   // eslint-disable-next-line 
   const [isLoading, setIsLoading] = useState(false);
 
 

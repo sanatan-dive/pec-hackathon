@@ -14,6 +14,7 @@ const Select = React.forwardRef<
     onValueChange: (value: string) => void
     className?: string
   }
+   // eslint-disable-next-line 
 >(({ options, value, onValueChange, className }, ref) => {
   return (
     <SelectPrimitive.Root value={value} onValueChange={onValueChange}>

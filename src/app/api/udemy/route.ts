@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { setupPuppeteer } from "@/utils/puppeteer";
 import { PrismaClient } from "@prisma/client";
-import type { Page, Browser } from "puppeteer";
+import type { c Browser } from "puppeteer";
 
 const prisma = new PrismaClient();
 

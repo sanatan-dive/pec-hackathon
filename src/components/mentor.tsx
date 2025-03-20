@@ -3,10 +3,20 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Header from '@/components/header'; 
-import { fetchMentors, mentorsData } from '@/data/mentordata';
+
+import { fetchMentors,  } from '@/data/mentordata';
+interface Mentor {
+  id: string;
+  name: string;
+  profileImage: string;
+  hourlyRate: number;
+  domains: string[];
+  bio: string;
+  availability: string;
+}
 
 export default function MentorsPage() {
+  
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [filteredMentors, setFilteredMentors] = useState<Mentor[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

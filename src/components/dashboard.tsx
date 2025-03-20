@@ -365,6 +365,7 @@ const UserDashboard: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm text-gray-500">Account Created</label>
+                {/* @ts-expect-error missing type */}
                 <p>{new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
             </div>

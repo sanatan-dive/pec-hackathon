@@ -630,7 +630,7 @@ export default function Home() {
                       <span key={i} className="text-lg mr-1">★</span>
                     ))}
                   </div>
-                  <p className="text-[#caf0f8] italic mb-6 flex-grow">"{testimonial.quote}"</p>
+                  <p className="text-[#caf0f8] italic mb-6 flex-grow">{testimonial.quote}</p>
                   <div className="flex items-center mt-auto">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#0077b6] to-[#0096c7] mr-4"></div>
                     <div>

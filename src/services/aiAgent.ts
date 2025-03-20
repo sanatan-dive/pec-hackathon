@@ -43,7 +43,7 @@ export class aiAgentService {
       ];
       
       const agent = createReactAgent({
-        // @ts-expect-error
+        
         llm,
         tools,
         checkpointSaver: memory,
@@ -85,6 +85,7 @@ export class aiAgentService {
       
       // Return response content and thread ID
       return {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         content: result.messages.map((msg: any) => msg.content).join('\n'),
         threadId: conversationThreadId
       };

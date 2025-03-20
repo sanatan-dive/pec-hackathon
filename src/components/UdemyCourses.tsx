@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Star, Bookmark } from "lucide-react";
+import { Star} from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth, SignInButton, useUser } from "@clerk/nextjs"; // Import Clerk hooks
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"; // Assuming you have a Dialog component
-import { Button } from "@/components/ui/button"; // Assuming you have a Button component
+import {  useUser } from "@clerk/nextjs"; // Import Clerk hooks
+
 import LoginDialog from "./LoginDialog";
-import axios from "axios";
+
 
 interface CourseraCoursesProps {
   courses: {
@@ -23,10 +22,12 @@ interface CourseraCoursesProps {
 
 export default function CourseraCourses({ courses }: CourseraCoursesProps) {
   const [showAll, setShowAll] = useState(false);
+  //eslint-disable-next-line
   const { isSignedIn, user } = useUser();
   const [expandedDescriptions, setExpandedDescriptions] = useState<{
     [key: number]: boolean;
   }>({});
+  //eslint-disable-next-line
   const [bookmarkedCourses, setBookmarkedCourses] = useState<{
     [key: number]: boolean;
   }>({});

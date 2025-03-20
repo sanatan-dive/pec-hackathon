@@ -6,7 +6,7 @@ import YouTubePlaylist from "@/components/YoutubePlaylist";
 import MediumBlogs from "@/components/MediumBlogs";
 import CourseraCourses from "@/components/CourseraCourses";
 import UdemyCourses from "@/components/UdemyCourses";
-import { ApiResponse } from "@/types";
+// import { ApiResponse } from "@/";
 import SkeletonLoader from "@/components/Loading";
 import { RainbowButton } from "./ui/rainbow-button";
 
@@ -19,7 +19,7 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
   const router = useRouter();
   const query = searchParams.get("query");
   const [searchQuery, setSearchQuery] = useStateHook(query || "");
-  const [responses, setResponses] = useStateHook<ApiResponse | null>(null);
+  const [responses, setResponses] = useStateHook(null);
   const [localIsLoading, setLocalIsLoading] = useStateHook(false);
 
   const placeholders = ["Enter your Topic", "Learn Anything", "Master Anything"];
@@ -37,7 +37,7 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
           throw new Error("Failed to fetch data");
         }
 
-        const data: ApiResponse = await response.json();
+        const data = await response.json();
         
         setResponses(data);
       } catch (error) {
@@ -109,7 +109,7 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
               placeholders={placeholders}
               onChange={handleChange}
               onSubmit={onSubmit}
-              disabled={localIsLoading}
+              // disabled={localIsLoading}
             />
           </motion.div>
         )}
@@ -142,6 +142,7 @@ export const LandingPageContent = ({ setIsLoading }: LandingPageContentProps) =>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
               {responses && (
                 <>
+        
                   <YouTubePlaylist playlists={responses?.results?.youtube?.playlists || []} />
                   <motion.div
                     variants={itemVariants}

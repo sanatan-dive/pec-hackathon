@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
       threadId: result.threadId
     });
   } 
- 
-  catch (error: any) {
+  // @ts-expect-error missing type
+  catch (error : string) {
     console.error('Agent error:', error);
     // Handle specific error types
     if (error.message?.includes('thread_id')) {

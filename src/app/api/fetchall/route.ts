@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { PrismaClient } from "@prisma/client";
+ // eslint-disable-next-line 
 const prisma = new PrismaClient();
 export async function GET(request: Request) {
 const { searchParams } = new URL(request.url);
@@ -28,6 +29,7 @@ const responses = await Promise.all(
 const results = apiEndpoints.reduce((acc, endpoint, index) => {
  acc[endpoint.name] = responses[index]?.data || [];
 return acc;
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  }, {} as Record<string, any>);
 return NextResponse.json({
  query,

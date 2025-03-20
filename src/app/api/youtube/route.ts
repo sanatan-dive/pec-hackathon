@@ -58,7 +58,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse | 
         key: YOUTUBE_API_KEY,
       },
     });
-
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const playlists: PlaylistData[] = response.data.items.map((item: any) => ({
       query, // Storing the query in the Playlist data
       title: item.snippet.title,

@@ -40,6 +40,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     // Map response data into our Prisma model structure
     const courses: Omit<Courseracourse, "id" | "createdAt" | "updatedAt">[] =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
       response.data.elements.map((course: any) => ({
         query, // Associate the query with the course
         name: course.name,

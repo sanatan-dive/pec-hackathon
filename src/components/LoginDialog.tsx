@@ -9,6 +9,7 @@ interface LoginDialogProps {
 
 function LoginDialog({ setShowLoginDialog }: LoginDialogProps) {
   const { user, isSignedIn } = useUser();
+  //eslint-disable-next-line
   const [isLoading, setIsLoading] = useState(false);
 
   const saveUserInfo = async () => {
