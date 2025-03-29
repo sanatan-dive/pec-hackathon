@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useUser } from '@clerk/nextjs';
 
 // Types for our data
 interface User {
@@ -129,6 +130,9 @@ const initialFeedPosts: Post[] = [
 ];
 
 const NetworksPage = () => {
+  // Use Clerk's hook to get current user
+  const { isLoaded, isSignedIn, user } = useUser();
+  
   const [connections, setConnections] = useState<User[]>(suggestedConnections);
   const [posts, setPosts] = useState<Post[]>(initialFeedPosts);
   const [postContent, setPostContent] = useState<string>('');
@@ -143,6 +147,25 @@ const NetworksPage = () => {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [postImage, setPostImage] = useState<string | null>(null);
+
+  // If Clerk is still loading, we can show a loading state
+  if (!isLoaded) {
+    return <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center">
+      <p className="text-white">Loading user data...</p>
+    </div>;
+  }
+
+  // If user is not signed in, we should redirect them to sign in
+  if (!isSignedIn) {
+    return <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center">
+      <p className="text-white mb-4">Please sign in to access your network</p>
+      <Link href="/sign-in">
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
+          Sign In
+        </button>
+      </Link>
+    </div>;
+  }
 
   const handleConnect = (userId: string) => {
     setConnections(
@@ -174,10 +197,10 @@ const NetworksPage = () => {
     const newPost: Post = {
       id: `new-${Date.now()}`,
       author: {
-        id: 'self',
-        name: 'Alex Morgan',
-        title: 'Founder & CEO, TechStartup',
-        avatar: '/api/placeholder/48/48',
+        id: user?.id || 'unknown',
+        name: user?.fullName || user?.firstName || 'Anonymous',
+        title: user?.publicMetadata?.title as string || 'Member',
+        avatar: user?.imageUrl || '/api/placeholder/48/48',
       },
       content: postContent,
       likes: 0,
@@ -247,6 +270,13 @@ const NetworksPage = () => {
     },
   };
 
+  // Get user data from Clerk
+  const userName = user?.fullName || user?.firstName || 'User';
+  const userTitle = user?.publicMetadata?.title as string || 'Member';
+  const userCompany = user?.publicMetadata?.company as string || '';
+  const userAvatar = user?.imageUrl || '/api/placeholder/80/80';
+  const displayTitle = userCompany ? `${userTitle}, ${userCompany}` : userTitle;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       <Head>
@@ -270,7 +300,7 @@ const NetworksPage = () => {
             <div className="bg-blue-800 h-24 relative">
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
                 <Image
-                  src="/api/placeholder/80/80"
+                  src={userAvatar}
                   alt="Profile"
                   width={80}
                   height={80}
@@ -279,26 +309,34 @@ const NetworksPage = () => {
               </div>
             </div>
             <div className="pt-16 pb-6 px-6 text-center">
-              <h2 className="text-xl font-bold text-gray-100">Alex Morgan</h2>
-              <p className="text-gray-400 mt-1">Founder & CEO, TechStartup</p>
+              <h2 className="text-xl font-bold text-gray-100">{userName}</h2>
+              <p className="text-gray-400 mt-1">{displayTitle}</p>
               <div className="mt-4 flex justify-center space-x-2">
                 <div className="text-center">
-                  <p className="font-bold text-gray-100">245</p>
+                  <p className="font-bold text-gray-100">
+                    {user?.publicMetadata?.connections as number || 245}
+                  </p>
                   <p className="text-sm text-gray-400">Connections</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold text-gray-100">18</p>
+                  <p className="font-bold text-gray-100">
+                    {user?.publicMetadata?.mentors as number || 18}
+                  </p>
                   <p className="text-sm text-gray-400">Mentors</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-bold text-gray-100">5</p>
+                  <p className="font-bold text-gray-100">
+                    {user?.publicMetadata?.investors as number || 5}
+                  </p>
                   <p className="text-sm text-gray-400">Investors</p>
                 </div>
               </div>
               <div className="mt-6">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition-colors">
-                  View Profile
-                </button>
+                <Link href="/dashboard">
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition-colors">
+                    View Profile
+                  </button>
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -314,7 +352,7 @@ const NetworksPage = () => {
             >
               <div className="flex items-center space-x-3">
                 <Image
-                  src="/api/placeholder/48/48"
+                  src={userAvatar}
                   alt="Your profile"
                   width={48}
                   height={48}
@@ -554,7 +592,7 @@ const NetworksPage = () => {
                       <div className="mt-4 border-t border-gray-700 pt-3">
                         <div className="flex items-center space-x-2 mb-4">
                           <Image
-                            src="/api/placeholder/32/32"
+                            src={userAvatar}
                             alt="Your profile"
                             width={32}
                             height={32}
@@ -586,7 +624,7 @@ const NetworksPage = () => {
                             {Array(commentCounts[post.id] || post.comments).fill(0).map((_, i) => (
                               <div key={i} className="flex items-start space-x-2">
                                 <Image
-                                  src="/api/placeholder/32/32"
+                                  src={i === 0 && commentCounts[post.id] > post.comments ? userAvatar : "/api/placeholder/32/32"}
                                   alt="Commenter profile"
                                   width={32}
                                   height={32}
@@ -594,7 +632,7 @@ const NetworksPage = () => {
                                 />
                                 <div className="bg-gray-700 rounded-lg px-3 py-2 text-gray-300 text-sm flex-1">
                                   <p className="font-bold text-gray-200">
-                                    {i === 0 && commentCounts[post.id] > post.comments ? 'You' : 'Network Member'}
+                                    {i === 0 && commentCounts[post.id] > post.comments ? userName : 'Network Member'}
                                   </p>
                                   <p>
                                     {i === 0 && commentCounts[post.id] > post.comments 
