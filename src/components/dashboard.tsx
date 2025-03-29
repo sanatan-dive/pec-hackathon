@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 
-// Define TypeScript interfaces (unchanged)
+import DashboardMentor from './DashboardMentor';
+
+// Define TypeScript interfaces (unchanged except for Appointment)
 interface UserProfile {
   startupIdea: string;
   skills: string[];
@@ -41,15 +43,7 @@ interface ConnectionsResponse {
   recommendedConnections: RecommendedConnection[];
 }
 
-interface Appointment {
-  id: string;
-  mentorName: string;
-  mentorTitle: string;
-  date: string;
-  time: string;
-  topic: string;
-  status: 'upcoming' | 'completed' | 'canceled';
-}
+
 
 interface InvestorMeeting {
   id: string;
@@ -74,32 +68,16 @@ const UserDashboard: React.FC = () => {
   });
   const [connections, setConnections] = useState<Connection[]>([]);
   const [recommendedConnections, setRecommendedConnections] = useState<RecommendedConnection[]>([]);
+
   const [skillInput, setSkillInput] = useState('');
   const [interestInput, setInterestInput] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
+ 
 
-  // Hardcoded Mentor Appointments and Investor Meetings (unchanged)
-  const mentorAppointments: Appointment[] = [
-    {
-      id: '1',
-      mentorName: 'Jane Smith',
-      mentorTitle: 'CTO at TechGrowth',
-      date: '2025-03-25',
-      time: '10:00 AM',
-      topic: 'Technical Architecture Review',
-      status: 'upcoming',
-    },
-    {
-      id: '2',
-      mentorName: 'Michael Johnson',
-      mentorTitle: 'Product Manager at StartupBoost',
-      date: '2025-03-28',
-      time: '2:00 PM',
-      topic: 'Go-to-Market Strategy',
-      status: 'upcoming',
-    },
-  ];
 
+ 
+
+  // Hardcoded Investor Meetings (unchanged)
   const investorMeetings: InvestorMeeting[] = [
     {
       id: '1',
@@ -119,13 +97,16 @@ const UserDashboard: React.FC = () => {
         const [profileRes, connectionsRes] = await Promise.all([
           fetch('/api/profile'),
           fetch('/api/connections'),
+        
         ]);
 
         if (!profileRes.ok) throw new Error(`Profile fetch failed: ${profileRes.status}`);
         if (!connectionsRes.ok) throw new Error(`Connections fetch failed: ${connectionsRes.status}`);
 
+
         const profileData = await profileRes.json();
         const connectionsData: ConnectionsResponse = await connectionsRes.json();
+   
 
         setProfile(profileData);
 
@@ -147,10 +128,12 @@ const UserDashboard: React.FC = () => {
 
         setConnections(formattedConnections);
         setRecommendedConnections(formattedRecommendations);
+
       } catch (error) {
         console.error('Error fetching data:', error);
         setConnections([]);
         setRecommendedConnections([]);
+
       } finally {
         setIsLoading(false);
       }
@@ -159,13 +142,13 @@ const UserDashboard: React.FC = () => {
     if (user) fetchData();
   }, [user]);
 
-  // Dark Mode Toggle Handler
+  // Dark Mode Toggle Handler (unchanged)
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
   };
 
-  // Handlers (unchanged except for styling adaptations)
+  // Handlers (unchanged)
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -239,6 +222,8 @@ const UserDashboard: React.FC = () => {
     }
   };
 
+  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
@@ -262,7 +247,7 @@ const UserDashboard: React.FC = () => {
 
   return (
     <div className={`container mx-auto py-8 px-4 ${isDarkMode ? 'dark' : ''}`}>
-      {/* Dark Mode Toggle */}
+      {/* Dark Mode Toggle (unchanged) */}
       <div className="flex justify-end mb-4">
         <button
           onClick={toggleDarkMode}
@@ -299,7 +284,7 @@ const UserDashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs (unchanged) */}
       <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
         <nav className="flex -mb-px">
           {['profile', 'connections', 'mentors', 'investors'].map((tab) => (
@@ -318,7 +303,7 @@ const UserDashboard: React.FC = () => {
         </nav>
       </div>
 
-      {/* Profile Tab Content */}
+      {/* Profile Tab Content (unchanged) */}
       {activeTab === 'profile' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
@@ -499,7 +484,7 @@ const UserDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Connections Tab Content */}
+      {/* Connections Tab Content (unchanged) */}
       {activeTab === 'connections' && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">Your Connections</h2>
@@ -639,65 +624,12 @@ const UserDashboard: React.FC = () => {
 
       {/* Mentor Appointments Tab Content */}
       {activeTab === 'mentors' && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">Your Mentor Appointments</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Manage your scheduled sessions with mentors</p>
-          <div className="space-y-4">
-            {mentorAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
-              >
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">{appointment.mentorName}</h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">{appointment.mentorTitle}</p>
-                    <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="mr-1 h-4 w-4"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      <span>
-                        {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
-                      </span>
-                    </div>
-                    <div className="mt-1">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Topic:</span>
-                      <span className="text-sm ml-1 text-gray-600 dark:text-gray-400">{appointment.topic}</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
-                      Reschedule
-                    </button>
-                    <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
-                      Join Meeting
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className="mt-6 w-full py-2 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            View All Appointments
-          </button>
-        </div>
+    <>
+    <DashboardMentor/>
+    </>
       )}
 
-      {/* Investor Meetings Tab Content */}
+      {/* Investor Meetings Tab Content (unchanged) */}
       {activeTab === 'investors' && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">Your Investor Meetings</h2>
@@ -743,9 +675,14 @@ const UserDashboard: React.FC = () => {
                     <button className="px-3 py-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
                       Reschedule
                     </button>
+                  <div className='flex flex-col' >
                     <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700">
                       Join Meeting
                     </button>
+                    <button>
+                      Cancel Meeting
+                    </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -855,8 +792,8 @@ const UserDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Dashboard Metrics */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Dashboard Metrics (updated to use mentorAppointments from state) */}
+      {/* <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Network Size</h3>
           <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-gray-100">{connections.length}</p>
@@ -910,7 +847,9 @@ const UserDashboard: React.FC = () => {
             Complete your profile to get better matches
           </div>
         </div>
-      </div>
+      </div> */}
+      
+
     </div>
   );
 };

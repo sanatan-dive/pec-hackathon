@@ -1,3 +1,4 @@
+"use client"
 import { motion } from "framer-motion";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";

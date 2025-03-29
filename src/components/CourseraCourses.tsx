@@ -40,7 +40,7 @@ export default function CourseraCourses({ courses }: CourseraCoursesProps) {
     );
   }
 
-  const displayedCourses = showAll ? courses : courses.slice(0, 1);
+  const displayedCourses = showAll ? courses : courses.slice(0, 4);
 
   const truncateDescription = (description: string, wordLimit: number) => {
     const words = description.split(" ");
@@ -93,7 +93,7 @@ export default function CourseraCourses({ courses }: CourseraCoursesProps) {
         </motion.h3>
 
         <div
-          className="overflow-y-auto max-h-[220px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800/50" 
+          className="overflow-y-auto max-h-[515px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800/50" 
           style={{
             scrollbarWidth: "thin",
           }}

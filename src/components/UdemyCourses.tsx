@@ -46,7 +46,7 @@ export default function CourseraCourses({ courses }: CourseraCoursesProps) {
     );
   }
 
-  const displayedCourses = showAll ? courses : courses.slice(0, 1);
+  const displayedCourses = showAll ? courses : courses.slice(0, 3);
 
   const truncateDescription = (description: string, wordLimit: number) => {
     const words = description.split(" ");
@@ -137,7 +137,7 @@ export default function CourseraCourses({ courses }: CourseraCoursesProps) {
 
         {/* Scrollable Container */}
         <div
-          className="overflow-y-auto max-h-[260px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800/50" // Reduced max-h-[400px] to max-h-[250px]
+          className="overflow-y-auto max-h-[515px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800/50" // Reduced max-h-[400px] to max-h-[250px]
           style={{
             scrollbarWidth: "thin", // For Firefox
           }}

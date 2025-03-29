@@ -26,7 +26,7 @@ const SkeletonLoader = () => {
         </Card>
 
         {/* Coursera and Udemy Section */}
-        <div className="flex flex-col gap-8 h-full w-full">
+        
           {/* Coursera */}
           <Card className="bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 w-full shadow-2xl">
             <CardHeader>
@@ -60,27 +60,10 @@ const SkeletonLoader = () => {
           </Card>
         </div>
 
-        {/* Medium Blogs Section */}
-        <Card className="bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 w-full shadow-2xl">
-          <CardHeader>
-            <Skeleton className="h-6 w-32 bg-gray-700" />
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-32 w-full bg-gray-700" />
-                <Skeleton className="h-4 w-full bg-gray-700" />
-                <Skeleton className="h-4 w-2/3 bg-gray-700" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-4 w-16 bg-gray-700" />
-                  <Skeleton className="h-4 w-16 bg-gray-700" />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+
+       
       </div>
-    </div>
+ 
   );
 };
 

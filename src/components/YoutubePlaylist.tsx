@@ -72,7 +72,7 @@ export default function YouTubePlaylist({ playlists }: YouTubePlaylistProps) {
 
         {/* Scrollable Container */}
         <div
-          className="overflow-y-auto max-h-[515px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800/50" // Reduced max-h-
+          className="overflow-y-auto max-h-[380px] scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-800/50" // Reduced max-h-
           style={{
             scrollbarWidth: 'thin', // For Firefox
           }}

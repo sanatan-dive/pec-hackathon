@@ -76,3 +76,24 @@ model Playlist {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Mentor {
+  id           String    @id @default(uuid())
+  name         String
+  title        String?   // Optional field for mentor title
+  profileImage String?
+  hourlyRate   Float?
+  domains      String[]  // Assuming domains are stored as an array
+  bio          String?
+  availability String?
+  bookings     Booking[]
+}
+
+model Booking {
+  id        String   @id @default(uuid())
+  mentorId  String
+  userId    String
+  time      String   // Stored as "YYYY-MM-DD HH:MM" or ISO string
+  createdAt DateTime @default(now())
+  mentor    Mentor   @relation(fields: [mentorId], references: [id])
+}
