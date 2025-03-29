@@ -98,7 +98,7 @@ export default function RoadmapForm() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center min-h-screen w-full overflow-y-auto  text-slate-100 p-6"
+      className="flex flex-col items-center min-h-screen w-full overflow-y-auto bg-blue-950 text-slate-100 p-6"
     >
       <motion.div 
         className="w-full max-w-4xl"

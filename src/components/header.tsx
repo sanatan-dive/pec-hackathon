@@ -39,28 +39,7 @@ const Header: React.FC = () => {
               Home
             </Link>
             
-            <SignedOut>
-              <Link 
-                href="/features" 
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  pathname === "/features" 
-                    ? "bg-indigo-500 text-white" 
-                    : "text-indigo-100 hover:bg-indigo-700 hover:text-white transition-colors"
-                }`}
-              >
-                Features
-              </Link>
-              <Link 
-                href="/resources" 
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  pathname === "/resources" 
-                    ? "bg-indigo-500 text-white" 
-                    : "text-indigo-100 hover:bg-indigo-700 hover:text-white transition-colors"
-                }`}
-              >
-                Resources
-              </Link>
-            </SignedOut>
+           
             
             <SignedIn>
               <Link 
